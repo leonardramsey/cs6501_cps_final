@@ -1,7 +1,3 @@
-# Created by Minbiao Han and Roman Sharykin
-# CS6501-003 Spring 2019
-# Ref: The SMT_Based Automatic Road Network Generation in Vehicle Simulation Environment (BaekGyu Kim et al. 2016)
-
 # import Solver as Solver
 from z3 import *
 
@@ -12,9 +8,15 @@ from z3 import *
 # theta_max: max curvature of each curve
 # d_min: min distance of any two adjacent curves
 # d_max: max distance of any two adjacent curves
+# ---------------------------------------
+# vol_min: min number of curves
+# vol_max: max number of curves
+# pitch_min: min curvature of each curve
+# pitch_max: max curvature of each curve
+# speed_min: min distance of any two adjacent curves
+# speed_max: max distance of any two adjacent curves
 
-
-C_g = [5, 100, 0, 35, 5, 22]  # global coverage criteria
+C_g = [0, 100, 0, 100, 0, 100]  # global coverage criteria
 
 C_l = []  # local coverage criteria
 solN = 5
@@ -34,6 +36,10 @@ x_max = 300
 y_max = 300
 z_max = 300
 
+# **** consider adding rate constraint for min or max rate of change for each speech category in terms of actual value
+# e.g. if we go from volume 1 to 2, then maybe we should stay on the lower end of this spectrum to make the change smoother
+# or give the developer the option to constrain this change?
+
 s = Solver()
 
 def abs(x):
@@ -43,8 +49,14 @@ def abs(x):
 # Complete the code
 # Q1: Road Segment Generation Algorithm
 #####################################
-# Note: Curves need to be generated with curves in order across a certain axis
-def road_seg_gen(X, Y, Z, x_min, y_min, z_min, x_max, y_max, z_max, theta_min, theta_max, d_min, d_max, N):
+# Constraints
+# vol_min <= vol <= vol_max
+# pitch_min <= pitch <= pitch_max
+# speed_min <= speed <= speed_max
+# ** d_min <= abs(vol_prev - vol_next) d_max **
+# # ** d_min <= abs(pitch_prev - pitch_next) <= d_max **
+# # ** d_min <= abs(speed_prev - speed_next) <= d_max **
+def speech_gen(X, Y, Z, x_min, y_min, z_min, x_max, y_max, z_max, theta_min, theta_max, d_min, d_max, N):
         # omit random number generator for this assignment as per instruction
 
         # X/Y/Z constraint
@@ -80,6 +92,8 @@ def road_seg_gen(X, Y, Z, x_min, y_min, z_min, x_max, y_max, z_max, theta_min, t
 # Complete the code
 # Q2: Coverage Consistency Check
 #####################################
+
+# ****** this would need to be modified as well since definition of coverage has changed
 def coverage_consistence(C_l, C_g, K):
     for i in range (0,K):
         ci_nmin = []
@@ -130,6 +144,8 @@ def main():
         # Complete the code
         # Q3: Sequential Road Network Generation Algorithm
         #####################################
+
+        # this needs to be modified since this could will be called each time the behavior must be updated, so not all behaviors will be generated at once
         for sol_ind in range(solN):
             N_z3 = Int('N')
             s.add(N_z3 >= C_l[sol_ind][0], N_z3 <=C_l[sol_ind][1])
@@ -140,7 +156,7 @@ def main():
                 X = [ Int('x_%s' % i) for i in range(N) ]
                 Y = [ Int('y_%s' % i) for i in range(N) ]
                 Z = [ Int('z_%s' % i) for i in range(N) ]
-                road_seg_gen(X,Y,Z,x_min,y_min,z_min,x_max,y_max,z_max,C_l[sol_ind][2],C_l[sol_ind][3],C_l[sol_ind][4],C_l[sol_ind][5],N)
+                speech_gen(X, Y, Z, x_min, y_min, z_min, x_max, y_max, z_max, C_l[sol_ind][2], C_l[sol_ind][3], C_l[sol_ind][4], C_l[sol_ind][5], N)
                 s.check()
                 model = s.model()
                 solArrayX.append([model[X[i]].as_long() for i in range(N)])
