@@ -44,18 +44,18 @@ def abs(x):
 # speed_d_min <= abs(speed_prev - speed_next) <= speed_d_max
 
 # maybe volume pitch and speed could be 2-element arrays with previous and new
-def speech_gen(volume, pitch, speed, vol_min, vol_max, pitch_min, pitch_max, speed_min, speed_max, vol_d_min, vol_d_max, pitch_d_min, pitch_d_max, speed_d_min, speed_d_max):
+def speech_gen(prev_speech, volume, pitch, speed, vol_min, vol_max, pitch_min, pitch_max, speed_min, speed_max, vol_d_min, vol_d_max, pitch_d_min, pitch_d_max, speed_d_min, speed_d_max):
         # omit random number generator for this assignment as per instruction
 
         # volume/pitch/speed constraint
-        s.add(vol_min <= volume[1], volume[1] <= vol_max,
-              pitch_min <= pitch[1], pitch[1] <= pitch_max,
-              speed_min <= speed[1], speed[1] <= speed_max)
+        s.add(vol_min <= volume[0], volume[0] <= vol_max,
+              pitch_min <= pitch[0], pitch[0] <= pitch_max,
+              speed_min <= speed[0], speed[0] <= speed_max)
 
         # attribute distance constraint
-        s.add(vol_d_min <= abs(volume[1] - volume[0]), abs(volume[1] - volume[0]) <= vol_d_max,
-              pitch_d_min <= abs(pitch[1] - pitch[0]), abs(pitch[1] - pitch[0]) <= pitch_d_max,
-              speed_d_min <= abs(speed[1] - speed[0]), abs(speed[1] - speed[0]) <= speed_d_max)
+        s.add(vol_d_min <= abs(volume[0] - prev_speech[0]), abs(volume[0] - prev_speech[0]) <= vol_d_max,
+              pitch_d_min <= abs(pitch[0] - prev_speech[1]), abs(pitch[0] - prev_speech[1]) <= pitch_d_max,
+              speed_d_min <= abs(speed[0] - prev_speech[2]), abs(speed[0] - prev_speech[2]) <= speed_d_max)
 
 def coverage_consistence(C_l, C_g):
     if C_l[0] < C_g[0]: # vol_min
@@ -87,33 +87,39 @@ curNumArray = []
 
 def main():
     # Coverage consistency check
-    # prev_speech = [75, 50, 40] # prev_vol, prev_pitch, prev_speed
-    C_l = [30, 80, 40, 80, 0, 80]
+    print('global criteria')
+    print(C_g)
+    C_l = [30, 80, 45, 80, 0, 80]
+    print('local criteria')
+    print(C_l)
     cov_con = coverage_consistence(C_l, C_g)
     if cov_con == False:
         print("No-Sol\n")
         return 0
     else:
         # this needs to be modified since this could will be called each time the behavior must be updated, so not all behaviors will be generated at once
-        volume = [ Int('vol_%s' % i) for i in range(N) ]
-        pitch = [ Int('pitch_%s' % i) for i in range(N) ]
-        speed = [ Int('speed_%s' % i) for i in range(N) ]
+        prev_speech = [75, 50, 40]  # prev_vol, prev_pitch, prev_speed
+        print('previous speech')
+        print(prev_speech)
+        volume = [ Int('vol_%s' % i) for i in range(1) ]
+        pitch = [ Int('pitch_%s' % i) for i in range(1) ]
+        speed = [ Int('speed_%s' % i) for i in range(1) ]
         print('init volume')
         print(volume)
         print('init pitch')
         print(pitch)
         print('init speed')
         print(speed)
-        speech_gen(volume, pitch, speed,
+        speech_gen(prev_speech, volume, pitch, speed,
                    C_l[0], C_l[1], C_l[2], C_l[3], C_l[4], C_l[5],
                    C_g[6], C_g[7], C_g[8], C_g[9], C_g[10], C_g[11])
         print('Solver')
         print(s)
         s.check()
         model = s.model()
-        solArrayVol.append([model[volume[1]].as_long()])
-        solArrayPitch.append([model[pitch[1]].as_long()])
-        solArraySpeed.append([model[speed[1]].as_long()])
+        solArrayVol.append([model[volume[0]].as_long()])
+        solArrayPitch.append([model[pitch[0]].as_long()])
+        solArraySpeed.append([model[speed[0]].as_long()])
 
         curNumArray.append(N)
         s.reset()
