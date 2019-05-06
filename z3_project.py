@@ -39,7 +39,7 @@ def abs(x):
 # pitch_d_min <= abs(pitch_prev - pitch_next) <= pitch_d_max
 # speed_d_min <= abs(speed_prev - speed_next) <= speed_d_max
 
-def speech_gen(prev_speech, volume, pitch, speed, vol_min, vol_max, pitch_min, pitch_max, speed_min, speed_max, vol_d_min, vol_d_max, pitch_d_min, pitch_d_max, speed_d_min, speed_d_max):
+def add_speech_criteria(prev_speech, volume, pitch, speed, vol_min, vol_max, pitch_min, pitch_max, speed_min, speed_max, vol_d_min, vol_d_max, pitch_d_min, pitch_d_max, speed_d_min, speed_d_max):
         # omit random number generator for this assignment as per instruction
 
         # volume/pitch/speed constraint
@@ -100,9 +100,9 @@ def main():
         print(pitch)
         print('init speed')
         print(speed)
-        speech_gen(prev_speech, volume, pitch, speed,
-                   C_l[0], C_l[1], C_l[2], C_l[3], C_l[4], C_l[5],
-                   C_g[6], C_g[7], C_g[8], C_g[9], C_g[10], C_g[11])
+        add_speech_criteria(prev_speech, volume, pitch, speed,
+                            C_l[0], C_l[1], C_l[2], C_l[3], C_l[4], C_l[5],
+                            C_g[6], C_g[7], C_g[8], C_g[9], C_g[10], C_g[11])
         print('Solver')
         print(s)
         s.check()
