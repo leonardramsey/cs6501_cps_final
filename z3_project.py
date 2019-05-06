@@ -26,11 +26,7 @@ vol_max = 100
 pitch_max = 100
 speed_max = 100
 
-# **** consider adding rate constraint for min or max rate of change for each speech category in terms of actual value
-# e.g. if we go from volume 1 to 2, then maybe we should stay on the lower end of this spectrum to make the change smoother
-# or give the developer the option to constrain this change?
-
-s = Solver()
+s = Optimize()
 
 def abs(x):
     return If(x >= 0, x, -x)
@@ -43,7 +39,6 @@ def abs(x):
 # pitch_d_min <= abs(pitch_prev - pitch_next) <= pitch_d_max
 # speed_d_min <= abs(speed_prev - speed_next) <= speed_d_max
 
-# maybe volume pitch and speed could be 2-element arrays with previous and new
 def speech_gen(prev_speech, volume, pitch, speed, vol_min, vol_max, pitch_min, pitch_max, speed_min, speed_max, vol_d_min, vol_d_max, pitch_d_min, pitch_d_max, speed_d_min, speed_d_max):
         # omit random number generator for this assignment as per instruction
 
@@ -56,6 +51,24 @@ def speech_gen(prev_speech, volume, pitch, speed, vol_min, vol_max, pitch_min, p
         s.add(vol_d_min <= abs(volume[0] - prev_speech[0]), abs(volume[0] - prev_speech[0]) <= vol_d_max,
               pitch_d_min <= abs(pitch[0] - prev_speech[1]), abs(pitch[0] - prev_speech[1]) <= pitch_d_max,
               speed_d_min <= abs(speed[0] - prev_speech[2]), abs(speed[0] - prev_speech[2]) <= speed_d_max)
+
+        # # for increase vol...
+        # s.add(prev_speech[0] <= volume[0])
+        #
+        # # for decrease vol...
+        # s.add(prev_speech[0] >= volume[0])
+        #
+        # # for increase pitch...
+        # s.add(prev_speech[1] <= pitch[0])
+        #
+        # # for decrease pitch...
+        # s.add(prev_speech[1] >= pitch[0])
+        #
+        # # for increase speed
+        # s.add(prev_speech[2] <= speed[0])
+        #
+        # # for decrease speed
+        # s.add(prev_speech[2] >= speed[0])
 
 def coverage_consistence(C_l, C_g):
     if C_l[0] < C_g[0]: # vol_min
@@ -89,18 +102,19 @@ def main():
     # Coverage consistency check
     print('global criteria')
     print(C_g)
-    C_l = [30, 80, 45, 80, 0, 80]
+    C_l = [30, 90, 25, 80, 0, 80]
     print('local criteria')
     print(C_l)
+    prev_speech = [75, 50, 40]  # prev_vol, prev_pitch, prev_speed
+    print('previous speech')
+    print(prev_speech)
     cov_con = coverage_consistence(C_l, C_g)
     if cov_con == False:
-        print("No-Sol\n")
-        return 0
+        print("Error: Coverage consistency check failed. No New Solution could be generated.\n")
+        return prev_speech
     else:
         # this needs to be modified since this could will be called each time the behavior must be updated, so not all behaviors will be generated at once
-        prev_speech = [75, 50, 40]  # prev_vol, prev_pitch, prev_speed
-        print('previous speech')
-        print(prev_speech)
+
         volume = [ Int('vol_%s' % i) for i in range(1) ]
         pitch = [ Int('pitch_%s' % i) for i in range(1) ]
         speed = [ Int('speed_%s' % i) for i in range(1) ]
@@ -122,7 +136,7 @@ def main():
         solArraySpeed.append([model[speed[0]].as_long()])
 
         curNumArray.append(N)
-        s.reset()
+        # s.reset()
         # s.add(solArrayVol[sol_ind][N - 1] == volume[0], solArrayPitch[sol_ind][N - 1] == pitch[0],
         #       solArraySpeed[sol_ind][N - 1] == speed[0])
         # s.add(
