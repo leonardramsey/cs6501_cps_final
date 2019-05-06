@@ -89,7 +89,7 @@ def main():
         print("Error: Coverage consistency check failed. No New Solution could be generated.\n")
         return prev_speech
     else:
-        # this needs to be modified since this could will be called each time the behavior must be updated, so not all behaviors will be generated at once
+        # TODO this needs to be modified since this could will be called each time the behavior must be updated, so not all behaviors will be generated at once
 
         volume = [ Int('vol_%s' % i) for i in range(1) ]
         pitch = [ Int('pitch_%s' % i) for i in range(1) ]
@@ -119,7 +119,7 @@ def main():
     print(solArrayPitch)
     print('final solArraySpeed')
     print(solArraySpeed)
-    
+
     # Write the generated speech information into a file
     file = open("speech.txt", "w")
     file.write('Speech ' + str(0 + 1) + ':\n')
