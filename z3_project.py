@@ -106,12 +106,16 @@ def main():
         print('Solver')
         print(s)
         s.check()
-        model = s.model()
-        solArrayVol.append([model[volume[0]].as_long()])
-        solArrayPitch.append([model[pitch[0]].as_long()])
-        solArraySpeed.append([model[speed[0]].as_long()])
+        if s.check() == sat:
+            model = s.model()
+            solArrayVol.append([model[volume[0]].as_long()])
+            solArrayPitch.append([model[pitch[0]].as_long()])
+            solArraySpeed.append([model[speed[0]].as_long()])
 
-        curNumArray.append(N)
+            curNumArray.append(N)
+        else:
+            print("Error: Coverage consistency check failed. No New Solution could be generated.\n")
+            return prev_speech
 
     print('final solArrayVol')
     print(solArrayVol)
